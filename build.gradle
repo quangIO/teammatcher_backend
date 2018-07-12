@@ -1,0 +1,84 @@
+buildscript {
+  repositories {
+    mavenCentral()
+    jcenter()
+    maven { url "https://plugins.gradle.org/m2/" }
+  }
+  dependencies {
+    classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.2.50'
+    classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.4'
+    classpath 'net.ltgt.gradle:gradle-apt-plugin:0.15'
+  }
+}
+
+apply plugin: 'kotlin'
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'application'
+apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'kotlin-kapt'
+
+repositories {
+  mavenCentral()
+}
+
+version = '0.0.1-SNAPSHOT'
+group = 'com.quangio'
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+mainClassName = 'io.vertx.core.Launcher'
+def vertx_version = '3.5.2'
+
+dependencies {
+  compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.2.50"
+  compile("io.vertx:vertx-core:$vertx_version")
+  // compile("$this-web:$vertx_version")
+  compile("io.vertx:vertx-lang-kotlin:$vertx_version") {
+    exclude group: 'org.jetbrains.kotlin'
+  }
+  compile("io.vertx:vertx-sockjs-service-proxy:$vertx_version")
+  compile("io.vertx:vertx-lang-kotlin-coroutines:$vertx_version") {
+    exclude group: 'org.jetbrains.kotlin'
+  }
+  compile("io.vertx:vertx-jdbc-client:$vertx_version")
+  compile("io.vertx:vertx-auth-oauth2:$vertx_version")
+
+  compile('io.requery:requery:1.5.1')
+  compile('io.requery:requery-kotlin:1.5.1')
+  kapt 'io.requery:requery-processor:1.5.1'
+
+  // compile 'org.pac4j:vertx-pac4j:3.1.0'
+  // compile 'org.pac4j:pac4j-oauth:3.0.0'
+
+  compile('com.zaxxer:HikariCP:3.1.0')
+  compile 'org.hsqldb:hsqldb:2.4.1'
+
+  compile 'org.postgresql:postgresql:42.2.2'
+
+  compile "com.fasterxml.jackson.module:jackson-module-kotlin:2.9.+"
+
+  compile 'org.slf4j:slf4j-api:1.7.+'
+  // compile 'org.slf4j:slf4j-jdk14:1.7.+'
+  compile 'org.apache.logging.log4j:log4j-slf4j-impl:2.9.0'
+}
+
+compileKotlin {
+  kotlinOptions {
+    jvmTarget = '1.8'
+  }
+}
+
+shadowJar {
+  classifier = 'fat'
+  manifest {
+    attributes 'Main-Verticle': 'com.quangio.vertxsample.MainVerticle'
+  }
+  mergeServiceFiles {
+    include 'META-INF/services/io.vertx.core.spi.VerticleFactory'
+  }
+}
+kotlin {
+  experimental {
+    coroutines "enable"
+  }
+}
